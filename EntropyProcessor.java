@@ -11,22 +11,40 @@ public class EntropyProcessor {
 	 * NOTE: Any additional information we need on the mouse inputs (timing for instance) can be added to the Pair class
 	 */
 	public static void main(String[] args) {
-		if (args.length != 2) {
+		if (args.length == 1 || args.length >= 4) {
 			System.err.println("ERROR: Must supply filename and confidence value as a command line argument");
 			System.exit(-1);
-		} 
-		String filename = args[0];
-		double confidence = Double.parseDouble(args[1]);
-		
-		ArrayList<Pair> data = readData(filename);
-		
-		ArrayList<Pair> processedData = process(data);
-		
-		double entropyEstimate = estimate(processedData);
-		
-		String[] entropy = mix(processedData);
-		
-		boolean testResult = test(entropy, confidence);
+		}
+		if (args.length == 2) {
+			String filename = args[0];
+			double confidence = Double.parseDouble(args[1]);
+			
+			ArrayList<Pair> data = readData(filename);
+			
+			ArrayList<Pair> processedData = process(data);
+			
+			double entropyEstimate = estimate(processedData);
+			
+			String[] entropy = mix(processedData);
+			
+			boolean testResult = test(entropy, confidence);
+		}
+		else {
+			String inputFilename = args[0];
+			String outputFilename = args[2];
+			
+			ArrayList<Pair> data = readData(inputFilename);
+			
+			try {
+				FileWriter writer = new FileWriter(outputFilename);
+				writer.write(pairToBits(data));
+				writer.close();
+			} catch (IOException e) {
+				System.out.println("Something went screwy writing to file.");
+				e.printStackTrace();
+			}
+			
+		}
 		
 		// Print test result or something
 	}
@@ -129,5 +147,18 @@ public class EntropyProcessor {
 	 */
 	public static boolean test(String[] entropy, double confidence) {
 		return false;
+	}
+	
+	public static String pairToBits(ArrayList<Pair> data) {
+		String bits = new String();
+		
+		int length = data.size();
+		
+		for (int i = 0; i < length; i++) {
+			bits += data.get(i).x;
+			bits += data.get(i).y; 
+		}
+		
+		return bits;
 	}
 }
