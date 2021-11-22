@@ -5,6 +5,7 @@ import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.commons.math3.special.Erf; //erfc function for Monobit test
+import org.jtransforms.fft.DoubleFFT_1D; //Fourier Transform function for NIST test
 
 public class EntropyProcessor {
 	
@@ -29,6 +30,10 @@ public class EntropyProcessor {
 			String[] entropy = mix(processedData);
 			
 			boolean testResult = test(entropy, confidence);
+			
+			System.out.println(frequencyNIST(pairToBits(data), confidence));
+			System.out.println(runsNIST(pairToBits(data), confidence));
+			System.out.println(fourierNIST(pairToBits(data), confidence));
 		}
 		else { // For when you give a input file, confidence value, and output file
 			String inputFilename = args[0];
@@ -168,25 +173,134 @@ public class EntropyProcessor {
 	// Implementation of the NIST Frequency (Monobit) Test
 	// Implemented by Aleks
 	// Takes the bit string and a confidence/ significance value
-	public static void frequencyNIST(String bits, double confidence) {
+	public static boolean frequencyNIST(String bits, double confidence) {
+		System.out.println("NIST Frequency Test:");
 		int length = bits.length();
 		int sum = 0;
 		
+		int ones = 0;
+		int zeroes = 0;
+		
 		for (int i = 0; i < length; i++) {
-			sum += 2 * bits.charAt(i) - 1;
+			sum += 2 * Character.getNumericValue(bits.charAt(i)) - 1;
+			if (Character.getNumericValue(bits.charAt(i)) == 0) {
+				zeroes++;
+			}
+			else {
+				ones++;
+			}
 		}
+		System.out.println("Sum: " + sum);
+		System.out.println("Zeroes: " + zeroes);
+		System.out.println("Ones: " + ones);
 		
-		double Sobs = Math.abs(sum)/Math.sqrt(length);
+		double S = Math.abs(sum)/Math.sqrt(length);
 		
-		double pvalue = Erf.erfc(Sobs/Math.sqrt(2));
+		System.out.println("S: " + S);
 		
-		if (pvalue < confidence) {
+		double pvalue = Erf.erfc(S/Math.sqrt(2));
+		
+		if (pvalue > confidence) {
 			System.out.println("P-value: " + pvalue);
 			System.out.println("Null hypothesis rejected (Not random).");
+			return false;
 		}
 		else {
 			System.out.println("P-value: " + pvalue);
 			System.out.println("Null hypothesis accepted (Sufficiently random).");
+			return true;
+		}
+	}
+	
+	public static boolean runsNIST(String bits, double confidence) {
+		System.out.println("NIST Runs Test:");
+		int length = bits.length();
+		int V;
+		int numOnes = 0;
+		
+		for (int i = 0; i < length; i++) {
+			if (Character.getNumericValue(bits.charAt(i)) == 1) {
+				numOnes++;
+			}
+		}
+		
+		double pi = numOnes/length;
+		
+		if (Math.abs(pi - 0.5) >= 2/Math.sqrt(length)) {
+			System.out.println("Does not pass frequency test.");
+			return false;
+		}
+		else {
+			V = 1;
+			for (int i = 1; i < length; i++) {
+				if (Character.getNumericValue(bits.charAt(i)) != Character.getNumericValue(bits.charAt(i-1))) {
+					V++;
+				}
+			}
+		}
+		
+		double pvalue = Erf.erfc(Math.abs(V - 2 * length * pi * (1-pi)) / (2 * pi * (1-pi) * Math.sqrt(2*length)));
+		
+		if (pvalue > confidence) {
+			System.out.println("P-value: " + pvalue);
+			System.out.println("Null hypothesis rejected (Not random).");
+			return false;
+		}
+		else {
+			System.out.println("P-value: " + pvalue);
+			System.out.println("Null hypothesis accepted (Sufficiently random).");
+			return true;
+		}
+	}
+	
+	// Based on https://github.com/stamfest/randomtests/blob/master/src/main/java/net/stamfest/randomtests/nist/DiscreteFourierTransform.java
+	public static boolean fourierNIST(String bits, double confidence) {
+		System.out.println("NIST Discrete Fourier Transform Test:");
+		int length = bits.length();
+		double d;
+		
+		double X[] = new double[length];
+		
+		for (int i = 0; i < length; i++) {
+            X[i] = 2 * (int) Character.getNumericValue(bits.charAt(i)) - 1;
+        }
+		
+		DoubleFFT_1D fft = new DoubleFFT_1D(length);
+		fft.realForward(X);
+		
+		double M[] = new double[length / 2 + 1]; // Not sure if that "+ 1" needs to be there.
+		
+		M[0] = Math.sqrt(X[0] * X[0]);
+		M[length/2] = Math.sqrt(X[1] * X[1]);
+		
+		for (int i = 0; i < length / 2 - 1; i++) {
+            M[i + 1] = Math.hypot(X[2 * i + 2], X[2 * i + 3]);
+        }
+		
+		int count = 0;
+        double upperBound = Math.sqrt(Math.log(1/0.05) * length);
+        for (int i = 0; i < length / 2; i++) {
+            if (M[i] < upperBound) {
+                count++;
+            }
+        }
+        
+        double N1 = count;
+        double N0 = 0.95 * length / 2.0;
+        
+        d = (N1 - N0) / Math.sqrt(length * 0.95 * 0.05 / 4);
+        
+        double pvalue = Erf.erfc(Math.abs(d) / Math.sqrt(2));
+        
+        if (pvalue > confidence) {
+			System.out.println("P-value: " + pvalue);
+			System.out.println("Null hypothesis rejected (Not random).");
+			return false;
+		}
+		else {
+			System.out.println("P-value: " + pvalue);
+			System.out.println("Null hypothesis accepted (Sufficiently random).");
+			return true;
 		}
 	}
 }
