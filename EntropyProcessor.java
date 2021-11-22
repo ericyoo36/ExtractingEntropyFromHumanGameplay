@@ -1,5 +1,6 @@
 import java.io.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -13,7 +14,7 @@ public class EntropyProcessor {
 		if (args.length != 2) {
 			System.err.println("ERROR: Must supply filename and confidence value as a command line argument");
 			System.exit(-1);
-		}
+		} 
 		String filename = args[0];
 		double confidence = Double.parseDouble(args[1]);
 		
@@ -28,6 +29,14 @@ public class EntropyProcessor {
 		boolean testResult = test(entropy, confidence);
 		
 		// Print test result or something
+	}
+	
+	/*
+	 * Calculates log base 2 of a given integer as a double.
+	 * Implemented by Joseph
+	 */
+	public static double log2(double x) {
+		return Math.log(x) / Math.log(2.0);
 	}
 	
 	/*
@@ -72,7 +81,38 @@ public class EntropyProcessor {
 	 * Implemented by Joseph
 	 */
 	public static double estimate(ArrayList<Pair> data) {
-		return 0.0;
+		// Count frequency of x, y pairs
+		HashMap<Pair, Integer> frequency = new HashMap<Pair, Integer>();
+		for (int i = 0; i < data.size(); i++) {
+			if (frequency.containsKey(data.get(i))) {
+				frequency.put(data.get(i), frequency.get(data.get(i)) + 1);
+			}
+			else {
+				frequency.put(data.get(i), 1);
+			}
+		}
+		// Sum the frequency of all pairs multiplied by their log(frequency) and multiply by negative one to calculate shannon entropy
+		double sum = 0.0;
+		double highestFrequency = 0.0;
+		double probabilityOfPair = 0.0;
+		
+		// Take the amount of occurrences of each pair (i) and divide it by the total size of the data.  Then add it to the sum of shannon entropy by multiplying it by its log2
+		for (Integer i : frequency.values()) {
+			probabilityOfPair = (double)i / (double)data.size();
+			if (probabilityOfPair > highestFrequency) {
+				highestFrequency = probabilityOfPair;
+			}
+			sum += probabilityOfPair * log2(probabilityOfPair);
+		}
+		
+		sum *= -1;
+		System.out.println("Entropy Estimate = " + sum);
+		
+		double minEntropy = -1 * highestFrequency * log2(highestFrequency);
+		
+		System.out.println("minEntropy = " + minEntropy);
+		
+		return sum;
 	}
 	
 	/*
