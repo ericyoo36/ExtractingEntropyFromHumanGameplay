@@ -11,8 +11,8 @@ public class EntropyProcessor {
 	 * NOTE: Any additional information we need on the mouse inputs (timing for instance) can be added to the Pair class
 	 */
 	public static void main(String[] args) {
-		if (args.length == 1 || args.length >= 4) {
-			System.err.println("ERROR: Must supply filename and confidence value as a command line argument");
+		if (args.length <= 1 || args.length >= 4) {
+			System.err.println("ERROR: Must supply filenames and confidence value as a command line argument");
 			System.exit(-1);
 		}
 		if (args.length == 2) {
@@ -155,8 +155,8 @@ public class EntropyProcessor {
 		int length = data.size();
 		
 		for (int i = 0; i < length; i++) {
-			bits += data.get(i).x;
-			bits += data.get(i).y; 
+			bits += Integer.toBinaryString(data.get(i).x);
+			bits += Integer.toBinaryString(data.get(i).y); 
 		}
 		
 		return bits;
