@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.apache.commons.math3.special.Erf; //erfc function for Monobit test
 
 public class EntropyProcessor {
 	
@@ -15,7 +16,7 @@ public class EntropyProcessor {
 			System.err.println("ERROR: Must supply filenames and confidence value as a command line argument");
 			System.exit(-1);
 		}
-		if (args.length == 2) {
+		if (args.length == 2) { // For when you just give an input file and confidence value
 			String filename = args[0];
 			double confidence = Double.parseDouble(args[1]);
 			
@@ -29,7 +30,7 @@ public class EntropyProcessor {
 			
 			boolean testResult = test(entropy, confidence);
 		}
-		else {
+		else { // For when you give a input file, confidence value, and output file
 			String inputFilename = args[0];
 			String outputFilename = args[2];
 			
@@ -149,6 +150,8 @@ public class EntropyProcessor {
 		return false;
 	}
 	
+	// Function to transform pairs of bits to a concatenated string of their binary equivalent.
+	// Implemented by Aleks
 	public static String pairToBits(ArrayList<Pair> data) {
 		String bits = new String();
 		
@@ -160,5 +163,30 @@ public class EntropyProcessor {
 		}
 		
 		return bits;
+	}
+	
+	// Implementation of the NIST Frequency (Monobit) Test
+	// Implemented by Aleks
+	// Takes the bit string and a confidence/ significance value
+	public static void frequencyNIST(String bits, double confidence) {
+		int length = bits.length();
+		int sum = 0;
+		
+		for (int i = 0; i < length; i++) {
+			sum += 2 * bits.charAt(i) - 1;
+		}
+		
+		double Sobs = Math.abs(sum)/Math.sqrt(length);
+		
+		double pvalue = Erf.erfc(Sobs/Math.sqrt(2));
+		
+		if (pvalue < confidence) {
+			System.out.println("P-value: " + pvalue);
+			System.out.println("Null hypothesis rejected (Not random).");
+		}
+		else {
+			System.out.println("P-value: " + pvalue);
+			System.out.println("Null hypothesis accepted (Sufficiently random).");
+		}
 	}
 }
