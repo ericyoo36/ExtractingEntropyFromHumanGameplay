@@ -27,7 +27,7 @@ public class EntropyProcessor {
 			
 			double entropyEstimate = estimate(processedData);
 			
-			String[] entropy = mix(processedData);
+			String entropy = mix(processedData);
 			
 			boolean testResult = test(entropy, confidence);
 			
@@ -143,15 +143,34 @@ public class EntropyProcessor {
 	 * Takes an ArrayList of pairs of integers representing (X, Y) mouse coordinates and returns the string of entropy generated from this
 	 * NOTE: String return type is a placeholder, return whatever data type would be most appropriate for representing entropy
 	 */
-	public static String[] mix(ArrayList<Pair> data) {
-		String[] strings = new String[1];
-		return strings;
+	public static String mix(ArrayList<Pair> data) {
+		int output = 0;
+		int[] input = pairToBits2(data);
+		int len = data.size();
+		int shift = 0;
+
+		for (int i=0; i < len -3; i++){
+			int a = input[i];
+			int b = input[i+1];
+
+			input[i] = a + b;
+			input[i+1] = Integer.rotateRight(b, shift);
+
+			a = input[i];
+			b = input[i+1];
+
+			input[i+3] = a ^ b;
+
+			shift = shift + 3;
+			output = input[i+3];
+		}
+		return Integer.toBinaryString(output);
 	}
 	
 	/*
 	 * Takes a list of entropy strings and a confidence value and applies NIST tests to them to determine if the strings are random/unpredictable up to the confidence level
 	 */
-	public static boolean test(String[] entropy, double confidence) {
+	public static boolean test(String entropy, double confidence) {
 		return false;
 	}
 	
@@ -168,6 +187,22 @@ public class EntropyProcessor {
 		}
 		
 		return bits;
+	}
+
+	// Function which takes pair input and convert it to list of X+Y integers
+	public static int[] pairToBits2(ArrayList<Pair> data) {
+		String bits = new String();
+		int length = data.size();
+		int[] out = new int[length];
+
+		for (int i = 0; i < length; i++) {
+			bits = "";
+			bits += Integer.toString(data.get(i).x);
+			bits += Integer.toString(data.get(i).y);
+			out[i] = Integer.parseInt(bits);
+		}
+
+		return out;
 	}
 	
 	// Implementation of the NIST Frequency (Monobit) Test
