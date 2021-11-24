@@ -138,7 +138,7 @@ public class EntropyProcessor {
 		sum *= -1;
 		System.out.println("Entropy Estimate = " + sum);
 		
-		double minEntropy = -1 * highestFrequency * log2(highestFrequency);
+		double minEntropy = -1 * log2(highestFrequency);
 		
 		System.out.println("minEntropy = " + minEntropy);
 		
