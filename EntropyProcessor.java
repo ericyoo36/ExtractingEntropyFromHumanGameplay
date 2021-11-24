@@ -23,13 +23,13 @@ public class EntropyProcessor {
 			
 			ArrayList<Pair> data = readData(filename);
 			
-			ArrayList<Pair> processedData = process(data);
+			process(data);
 			
-			double entropyEstimate = estimate(processedData);
+			double entropyEstimate = estimate(data);
 			
-			String entropy = mix(processedData);
+			//String entropy = mix(processedData);
 			
-			boolean testResult = test(entropy, confidence);
+			//boolean testResult = test(entropy, confidence);
 			
 			System.out.println(frequencyNIST(pairToBits(data), confidence));
 			System.out.println(runsNIST(pairToBits(data), confidence));
@@ -97,6 +97,12 @@ public class EntropyProcessor {
 	 * Returns a processed ArrayList of pairs of xintegers representing (X, Y) mouse coordinates
 	 */
 	public static ArrayList<Pair> process(ArrayList<Pair> data) {
+		for (int i = 0; i < data.size(); i++) {
+			if (data.get(i).x == 960 & data.get(i).y == 540) {
+				data.remove(i);
+			}
+		}
+		
 		return data;
 	}
 	
@@ -171,6 +177,9 @@ public class EntropyProcessor {
 	 * Takes a list of entropy strings and a confidence value and applies NIST tests to them to determine if the strings are random/unpredictable up to the confidence level
 	 */
 	public static boolean test(String entropy, double confidence) {
+		frequencyNIST(entropy, confidence);
+		runsNIST(entropy, confidence);
+		fourierNIST(entropy, confidence);
 		return false;
 	}
 	
@@ -183,9 +192,8 @@ public class EntropyProcessor {
 		
 		for (int i = 0; i < length; i++) {
 			bits += Integer.toBinaryString(data.get(i).x);
-			bits += Integer.toBinaryString(data.get(i).y); 
+			bits += Integer.toBinaryString(data.get(i).y);
 		}
-		
 		return bits;
 	}
 
@@ -235,7 +243,7 @@ public class EntropyProcessor {
 		
 		double pvalue = Erf.erfc(S/Math.sqrt(2));
 		
-		if (pvalue > confidence) {
+		if (pvalue < confidence) {
 			System.out.println("P-value: " + pvalue);
 			System.out.println("Null hypothesis rejected (Not random).");
 			return false;
@@ -276,7 +284,7 @@ public class EntropyProcessor {
 		
 		double pvalue = Erf.erfc(Math.abs(V - 2 * length * pi * (1-pi)) / (2 * pi * (1-pi) * Math.sqrt(2*length)));
 		
-		if (pvalue > confidence) {
+		if (pvalue < confidence) {
 			System.out.println("P-value: " + pvalue);
 			System.out.println("Null hypothesis rejected (Not random).");
 			return false;
@@ -327,7 +335,7 @@ public class EntropyProcessor {
         
         double pvalue = Erf.erfc(Math.abs(d) / Math.sqrt(2));
         
-        if (pvalue > confidence) {
+        if (pvalue < confidence) {
 			System.out.println("P-value: " + pvalue);
 			System.out.println("Null hypothesis rejected (Not random).");
 			return false;
