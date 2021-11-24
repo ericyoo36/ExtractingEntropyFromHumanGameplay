@@ -235,7 +235,7 @@ public class EntropyProcessor {
 		
 		double pvalue = Erf.erfc(S/Math.sqrt(2));
 		
-		if (pvalue > confidence) {
+		if (pvalue < confidence) {
 			System.out.println("P-value: " + pvalue);
 			System.out.println("Null hypothesis rejected (Not random).");
 			return false;
@@ -276,7 +276,7 @@ public class EntropyProcessor {
 		
 		double pvalue = Erf.erfc(Math.abs(V - 2 * length * pi * (1-pi)) / (2 * pi * (1-pi) * Math.sqrt(2*length)));
 		
-		if (pvalue > confidence) {
+		if (pvalue < confidence) {
 			System.out.println("P-value: " + pvalue);
 			System.out.println("Null hypothesis rejected (Not random).");
 			return false;
@@ -327,7 +327,7 @@ public class EntropyProcessor {
         
         double pvalue = Erf.erfc(Math.abs(d) / Math.sqrt(2));
         
-        if (pvalue > confidence) {
+        if (pvalue < confidence) {
 			System.out.println("P-value: " + pvalue);
 			System.out.println("Null hypothesis rejected (Not random).");
 			return false;
