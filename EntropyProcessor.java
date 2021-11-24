@@ -347,4 +347,79 @@ public class EntropyProcessor {
 			return true;
 		}
 	}
+	
+	public static boolean cusumNIST (String bits, int mode, double confidence) {
+		System.out.println("NIST Cumulative Sum Test:");
+		int z;
+        int zrev;
+        int n = bits.length();
+        double sqrtN = Math.sqrt(n);
+        int S, sup, inf, k;
+        double sum1, sum2;
+        
+        final NormalDistribution nd = new NormalDistribution();
+
+        z = zrev = 0;
+        S = 0;
+        sup = 0;
+        inf = 0;
+        for (k = 0; k < n; k++) {
+            if (Character.getNumericValue(bits.charAt(k)) != 0) {
+                S++;
+            } else {
+                S--;
+            }
+            if (S > sup) {
+                sup++;
+            }
+            if (S < inf) {
+                inf--;
+            }
+            z = (sup > -inf) ? sup : -inf;
+            zrev = (sup - S > S - inf) ? sup - S : S - inf;
+        }
+        
+        double pvalue;
+
+        if (mode == 0) {
+	        // forward
+	        sum1 = 0.0;
+	        for (k = (-n / z + 1) / 4; k <= (n / z - 1) / 4; k++) {
+	            sum1 += nd.cumulativeProbability(((4 * k + 1) * z) / sqrtN);
+	            sum1 -= nd.cumulativeProbability(((4 * k - 1) * z) / sqrtN);
+	        }
+	        sum2 = 0.0;
+	        for (k = (-n / z - 3) / 4; k <= (n / z - 1) / 4; k++) {
+	            sum2 += nd.cumulativeProbability(((4 * k + 3) * z) / sqrtN);
+	            sum2 -= nd.cumulativeProbability(((4 * k + 1) * z) / sqrtN);
+	        }
+	
+	        pvalue = 1.0 - sum1 + sum2;
+        }
+        else {
+	        // backwards
+	        sum1 = 0.0;
+	        for (k = (-n / zrev + 1) / 4; k <= (n / zrev - 1) / 4; k++) {
+	            sum1 += nd.cumulativeProbability(((4 * k + 1) * zrev) / sqrtN);
+	            sum1 -= nd.cumulativeProbability(((4 * k - 1) * zrev) / sqrtN);
+	        }
+	        sum2 = 0.0;
+	        for (k = (-n / zrev - 3) / 4; k <= (n / zrev - 1) / 4; k++) {
+	            sum2 += nd.cumulativeProbability(((4 * k + 3) * zrev) / sqrtN);
+	            sum2 -= nd.cumulativeProbability(((4 * k + 1) * zrev) / sqrtN);
+	        }
+	        pvalue = 1.0 - sum1 + sum2;
+        }
+		
+        if (pvalue < confidence) {
+			System.out.println("P-value: " + pvalue);
+			System.out.println("Null hypothesis rejected (Not random).");
+			return false;
+		}
+		else {
+			System.out.println("P-value: " + pvalue);
+			System.out.println("Null hypothesis accepted (Sufficiently random).");
+			return true;
+		}
+	}
 }
