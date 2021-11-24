@@ -84,6 +84,7 @@ public class EntropyProcessor {
 				y = Integer.parseInt(m.group());
 				pairs.add(new Pair(x, y));
 			}
+			reader.close;
 		} catch (FileNotFoundException e) {
 			System.err.println("ERROR: coordinates.txt not found");
 			System.exit(-1);
