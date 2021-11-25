@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.special.Erf; //erfc function for Monobit test
 import org.jtransforms.fft.DoubleFFT_1D; //Fourier Transform function for NIST test
 
@@ -22,6 +24,8 @@ public class EntropyProcessor {
 		if (args.length == 2) { // For when you just give an input file and confidence value
 			String filename = args[0];
 			double confidence = Double.parseDouble(args[1]);
+			
+			// Calculate Z value based on provided confidence
 			ZALPHA = calculateZ(confidence);
 			
 			ArrayList<Pair> data = readData(filename);
