@@ -9,6 +9,8 @@ import org.jtransforms.fft.DoubleFFT_1D; //Fourier Transform function for NIST t
 
 public class EntropyProcessor {
 	
+	public static double ZALPHA = 2.5758293035489008;
+	
 	/*
 	 * NOTE: Any additional information we need on the mouse inputs (timing for instance) can be added to the Pair class
 	 */
@@ -20,12 +22,17 @@ public class EntropyProcessor {
 		if (args.length == 2) { // For when you just give an input file and confidence value
 			String filename = args[0];
 			double confidence = Double.parseDouble(args[1]);
+			ZALPHA = calculateZ(confidence);
 			
 			ArrayList<Pair> data = readData(filename);
 			
 			process(data);
 			
 			double entropyEstimate = estimate(data);
+			
+			estimateMostCommon(data);
+			
+			estimateCollision(pairToBits(data));
 			
 			//String entropy = mix(processedData);
 			
@@ -107,6 +114,15 @@ public class EntropyProcessor {
 	}
 	
 	/*
+	 * Taken from https://stats.stackexchange.com/questions/71788/percentile-to-z-score-in-php-or-java
+	 */
+	public static double calculateZ(double confidence) {
+		double z = Math.sqrt(2) * Erf.erfcInv(2*confidence);
+		System.out.println(z);
+		return z;
+	}
+	
+	/*
 	 * Takes an ArrayList of pairs of integers representing (X, Y) mouse coordinates and returns a double representing the estimated amount of entropy from the data
 	 * Implemented by Joseph
 	 */
@@ -143,6 +159,94 @@ public class EntropyProcessor {
 		System.out.println("minEntropy = " + minEntropy);
 		
 		return sum;
+	}
+	
+	/*
+	 * 6.3.1 most common value estimate
+	 * Computes the entropy of the sample based on the frequency of the most common sample and the P value
+	 * Adapted code from https://github.com/usnistgov/SP800-90B_EntropyAssessment/blob/master/cpp/shared/most_common.h
+	 * Implemented by Joseph
+	 */
+	public static double estimateMostCommon(ArrayList<Pair> data) {
+		HashMap<Pair, Integer> frequency = new HashMap<Pair, Integer>();
+		for (int i = 0; i < data.size(); i++) {
+			if (frequency.containsKey(data.get(i))) {
+				frequency.put(data.get(i), frequency.get(data.get(i)) + 1);
+			}
+			else {
+				frequency.put(data.get(i), 1);
+			}
+		}
+		
+		int highestOccurences = 0;
+		
+		for (Integer i : frequency.values()) {
+			if (i > highestOccurences) {
+				highestOccurences = i;
+			}
+		}
+		
+		double highestFrequency = (double)highestOccurences / (double)data.size();
+		
+		double upperBound = Math.min(1.0, ZALPHA*Math.sqrt(highestFrequency*(1.0 - highestFrequency) / ((double)data.size() - 1)));
+		
+		double minEntropy = -log2(upperBound);
+		System.out.println("Estimated min-entropy from estimateMostCommon = " + upperBound);
+		
+		return minEntropy;
+	}
+	
+	/*
+	 * 6.3.2 Collision Estimate
+	 * Adapted code from https://github.com/usnistgov/SP800-90B_EntropyAssessment/blob/master/cpp/non_iid/collision_test.h
+	 * Implemented by Joseph
+	 */
+	public static double estimateCollision(String binaryData) {
+		int v, i ,j;
+		int t_v;
+		double X, s, p, lastP, pVal;
+		double lvalue, hvalue;
+		double hbound, lbound;
+		double hdomain, ldomain;
+		double entEst;
+		
+		i = 0;
+		v = 0;
+		s = 0.0;
+		
+		// compute wait times until collisions
+		while(i < binaryData.length() - 1) {
+			if (binaryData.charAt(i) == binaryData.charAt(i+1)) t_v = 2;
+			else if (i < binaryData.length() - 2) t_v = 3;
+			else break;
+			
+			v++;
+			s += t_v*t_v;
+			i += t_v;
+		}
+		
+		// X is mean of t_v's, s is sample stdev, where
+		// s^2 = (sum(t_v^2) - sum(t_v)^2/v) / (v-1)
+		X = i / (double)v;
+		s = Math.sqrt((s - (i*X)) / (v-1));
+		
+		X -= ZALPHA * s/Math.sqrt(v);
+		
+		// 2 is the smallest meaningful value here
+		if (X < 2.0) X = 2.0;
+		
+		if (X < 2.5) {
+			p = 0.5 + Math.sqrt(1.25 - 0.5 * X);
+			entEst = -1 * log2(p);
+			System.out.println("Collision estimate found");
+		} else {
+			System.out.println("Collision estimate could not find p, proceeding with lower bound for p");
+			p = 0.5;
+			entEst = 1.0;
+		}
+		
+		System.out.println("Collision estimate = " + entEst);
+		return entEst;
 	}
 	
 	/*
