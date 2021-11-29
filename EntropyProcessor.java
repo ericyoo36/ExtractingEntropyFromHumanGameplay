@@ -45,6 +45,7 @@ public class EntropyProcessor {
 			System.out.println(frequencyNIST(pairToBits(data), confidence));
 			System.out.println(runsNIST(pairToBits(data), confidence));
 			System.out.println(fourierNIST(pairToBits(data), confidence));
+			System.out.println(cusumNIST(pairToBits(data), 0, confidence));
 		}
 		else { // For when you give a input file, confidence value, and output file
 			String inputFilename = args[0];
@@ -114,7 +115,6 @@ public class EntropyProcessor {
 				data.remove(i);
 			}
 		}
-		
 		return data;
 	}
 	
@@ -123,7 +123,6 @@ public class EntropyProcessor {
 	 */
 	public static double calculateZ(double confidence) {
 		double z = Math.sqrt(2) * Erf.erfcInv(2*confidence);
-		System.out.println(z);
 		return z;
 	}
 	
@@ -302,6 +301,9 @@ public class EntropyProcessor {
 		for (int i = 0; i < length; i++) {
 			bits += Integer.toBinaryString(data.get(i).x);
 			bits += Integer.toBinaryString(data.get(i).y);
+			if (i == 0) {
+				System.out.println(bits);
+			}
 		}
 		return bits;
 	}
