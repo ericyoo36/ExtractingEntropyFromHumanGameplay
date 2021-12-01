@@ -53,6 +53,8 @@ public class EntropyProcessor {
 			System.out.println(blockFreqNIST(pairToBits(data), 20, confidence));
 			System.out.println(blockRunsNIST(pairToBits(data), confidence));
 			System.out.println(universalNIST(pairToBits(data), pairToBits(data).length()/20, 20, confidence));
+			
+			bitArrayToString(pairToBitsArray(data));
 		}
 		else { // For when you give a input file, confidence value, and output file
 			String inputFilename = args[0];
@@ -322,19 +324,95 @@ public class EntropyProcessor {
 		return false;
 	}
 	
+	/*
+	 * Converts list of integers from pairToBitsArray into a string for use in the NIST tests
+	 * Implemented by Joseph
+	 */
+	public static String bitArrayToString(ArrayList<Integer> bitarray) {
+		String bitstring = "";
+		for (int i = 0; i < bitarray.size(); i++) {
+			bitstring += String.format("%10s", Integer.toBinaryString(bitarray.get(i)).replace(" ", "0"));
+			System.out.println(bitstring);
+		}
+		return bitstring;
+	}
+	
+	/*
+	 * Converts list of pairs to an arraylist of integers representing the 7 least significant bits of the X coordinate concatenated with the 3 least significant bits of the Y coordinate
+	 * Implemented by Aleks & Joseph
+	 */
+	public static ArrayList<Integer> pairToBitsArray(ArrayList<Pair> data) {
+		ArrayList<Integer> bits = new ArrayList<Integer>();
+		
+		int length = data.size();
+		int xPrime = 0;
+		int yPrime = 0;
+		
+		String xStrMask = "0000000001111111";
+		int xMask = Integer.parseUnsignedInt(xStrMask, 2);
+		
+		String yStrMask = "0000000000000111";
+		int yMask = Integer.parseUnsignedInt(yStrMask, 2);
+		
+		//System.out.println("xMask = " + xMask + "\t" + xStrMask);
+		//System.out.println("yMask = " + yMask + "\t" + yStrMask);
+		
+		for (int i = 0; i < data.size(); i++) {
+			xPrime = data.get(i).x;
+			yPrime = data.get(i).y;
+			
+			System.out.println(String.format("x:\t\t%16s", Integer.toBinaryString(xPrime)).replace(" ", "0"));
+			System.out.println(String.format("y:\t\t%16s", Integer.toBinaryString(yPrime)).replace(" ", "0"));
+			
+			xPrime &= xMask;
+			yPrime &= yMask;
+			
+			String xString = String.format("%7s", Integer.toBinaryString(xPrime)).replace(" ", "0");
+			String yString = String.format("%3s", Integer.toBinaryString(yPrime)).replace(" ", "0");
+			System.out.println(String.format("xPostMask:\t%16s", xString));
+			System.out.println(String.format("yPostMask:\t%16s", yString));
+			System.out.println(Integer.parseUnsignedInt(xString + yString, 2));
+			bits.add(Integer.parseUnsignedInt(xString + yString, 2));
+		}
+		return bits;
+	}
+	
 	// Function to transform pairs of bits to a concatenated string of their binary equivalent.
-	// Implemented by Aleks
+	// Implemented by Aleks & Joseph
 	public static String pairToBits(ArrayList<Pair> data) {
 		String bits = new String();
 		
 		int length = data.size();
+		int xPrime = 0;
+		int yPrime = 0;
 		
-		for (int i = 0; i < length; i++) {
-			bits += Integer.toBinaryString(data.get(i).x);
-			bits += Integer.toBinaryString(data.get(i).y);
-			if (i == 0) {
-				System.out.println(bits);
-			}
+		String xStrMask = "0000000001111111";
+		int xMask = Integer.parseUnsignedInt(xStrMask, 2);
+		
+		String yStrMask = "0000000000000111";
+		int yMask = Integer.parseUnsignedInt(yStrMask, 2);
+		
+		//System.out.println("xMask = " + xMask + "\t" + xStrMask);
+		//System.out.println("yMask = " + yMask + "\t" + yStrMask);
+		
+		for (int i = 0; i < data.size(); i++) {
+			xPrime = data.get(i).x;
+			yPrime = data.get(i).y;
+			
+			System.out.println(String.format("x:\t\t%16s", Integer.toBinaryString(xPrime)).replace(" ", "0"));
+			System.out.println(String.format("y:\t\t%16s", Integer.toBinaryString(yPrime)).replace(" ", "0"));
+			
+			xPrime &= xMask;
+			yPrime &= yMask;
+			
+			String xString = String.format("%7s", Integer.toBinaryString(xPrime)).replace(" ", "0");
+			String yString = String.format("%3s", Integer.toBinaryString(yPrime)).replace(" ", "0");
+			System.out.println(String.format("xPostMask:\t%16s", xString));
+			System.out.println(String.format("yPostMask:\t%16s", yString));
+			System.out.println("bits String = " + xString + yString);
+			
+			bits += xString;
+			bits += yString;
 		}
 		return bits;
 	}
