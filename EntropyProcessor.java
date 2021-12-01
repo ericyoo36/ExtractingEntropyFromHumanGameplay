@@ -1,5 +1,6 @@
 import java.io.*;
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.HashMap;
 import java.util.Scanner;
 import java.util.regex.Matcher;
@@ -32,6 +33,9 @@ public class EntropyProcessor {
 			
 			process(data);
 			
+			// For use with ENT program
+			writeBytesToFile(data);
+			
 			double entropyEstimate = estimate(data);
 			
 			estimateMostCommon(data);
@@ -46,6 +50,9 @@ public class EntropyProcessor {
 			System.out.println(runsNIST(pairToBits(data), confidence));
 			System.out.println(fourierNIST(pairToBits(data), confidence));
 			System.out.println(cusumNIST(pairToBits(data), 0, confidence));
+			System.out.println(blockFreqNIST(pairToBits(data), 20, confidence));
+			System.out.println(blockRunsNIST(pairToBits(data), confidence));
+			System.out.println(universalNIST(pairToBits(data), pairToBits(data).length()/20, 20, confidence));
 		}
 		else { // For when you give a input file, confidence value, and output file
 			String inputFilename = args[0];
@@ -73,6 +80,29 @@ public class EntropyProcessor {
 	 */
 	public static double log2(double x) {
 		return Math.log(x) / Math.log(2.0);
+	}
+	
+	
+	/*
+	 * Converts data to bytes for ENT program testing
+	 * Implemented by Joseph
+	 */
+	public static void writeBytesToFile(ArrayList<Pair> data) {
+		String output = pairToBits(data);
+		BitSet bitSet = new BitSet(output.length());
+		int counter = 0;
+		for (char c : output.toCharArray()) {
+			if (c == '1') {
+				bitSet.set(counter);
+			}
+			counter++;
+		}
+		
+		try (FileOutputStream stream = new FileOutputStream("output")) {
+			stream.write(bitSet.toByteArray());
+		} catch (Exception e) {
+			System.out.println("ERROR: Error writing bytes to file.");
+		}
 	}
 	
 	/*
@@ -195,7 +225,7 @@ public class EntropyProcessor {
 		double upperBound = Math.min(1.0, ZALPHA*Math.sqrt(highestFrequency*(1.0 - highestFrequency) / ((double)data.size() - 1)));
 		
 		double minEntropy = -log2(upperBound);
-		System.out.println("Estimated min-entropy from estimateMostCommon = " + upperBound);
+		System.out.println("Estimated min-entropy from estimateMostCommon = " + minEntropy);
 		
 		return minEntropy;
 	}
@@ -231,10 +261,10 @@ public class EntropyProcessor {
 		
 		// X is mean of t_v's, s is sample stdev, where
 		// s^2 = (sum(t_v^2) - sum(t_v)^2/v) / (v-1)
-		X = i / (double)v;
-		s = Math.sqrt((s - (i*X)) / (v-1));
+		X = (double)i / (double)v;
+		s = Math.sqrt((s - ((double)i*X)) / ((double)v-1));
 		
-		X -= ZALPHA * s/Math.sqrt(v);
+		X -= ZALPHA * s/Math.sqrt((double)v);
 		
 		// 2 is the smallest meaningful value here
 		if (X < 2.0) X = 2.0;
@@ -249,7 +279,8 @@ public class EntropyProcessor {
 			entEst = 1.0;
 		}
 		
-		System.out.println("Collision estimate = " + entEst);
+		System.out.println("Collision Estimate: p = " + p);
+		System.out.println("Collision Estimate: min entropy =  " + entEst);
 		return entEst;
 	}
 	
