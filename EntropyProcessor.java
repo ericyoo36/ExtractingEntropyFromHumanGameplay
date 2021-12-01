@@ -39,7 +39,7 @@ public class EntropyProcessor {
 			// For use with ENT program
 			writeBytesToFile(bitString);
 			
-			double entropyEstimate = estimate(bitsArray);
+			double entropyEstimate 		 = estimate(bitsArray);
 			
 			estimateMostCommon(bitsArray);
 			
@@ -49,13 +49,15 @@ public class EntropyProcessor {
 			
 			//boolean testResult = test(entropy, confidence);
 			
+			System.out.println("bitString.length() = " + bitString.length());
+			
 			System.out.println(frequencyNIST(bitString, confidence));
 			System.out.println(runsNIST(bitString, confidence));
 			System.out.println(fourierNIST(bitString, confidence));
 			System.out.println(cusumNIST(bitString, 0, confidence));
-			System.out.println(blockFreqNIST(bitString, 20, confidence));
+			System.out.println(blockFreqNIST(bitString, 10, confidence));
 			System.out.println(blockRunsNIST(bitString, confidence));
-			System.out.println(universalNIST(bitString, bitString.length()/20, 20, confidence));
+			System.out.println(universalNIST(bitString, bitString.length()/10, 10, confidence));
 			
 			bitArrayToString(pairToBitsArray(data));
 		}
@@ -143,7 +145,7 @@ public class EntropyProcessor {
 	}
 	
 	/*
-	 * Takes an ArrayList of pairs of integers representing (X, Y) mouse coordinates and returns a double representing the estimated amount of entropy from the data
+	 * Takes an ArrayList of integers representing mouse coordinates and returns a double representing the estimated amount of entropy from the data
 	 * Implemented by Joseph
 	 */
 	public static double estimate(ArrayList<Integer> data) {
@@ -390,12 +392,13 @@ public class EntropyProcessor {
 		int zeroes = 0;
 		
 		for (int i = 0; i < length; i++) {
-			sum += 2 * Character.getNumericValue(bits.charAt(i)) - 1;
 			if (Character.getNumericValue(bits.charAt(i)) == 0) {
 				zeroes++;
+				sum -= 1;
 			}
 			else {
 				ones++;
+				sum += 1;
 			}
 		}
 		System.out.println("Sum: " + sum);
