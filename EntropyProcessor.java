@@ -33,47 +33,32 @@ public class EntropyProcessor {
 			
 			process(data);
 			
+			ArrayList<Integer> bitsArray = pairToBitsArray(data);
+			String bitString			 = bitArrayToString(bitsArray);
+			
 			// For use with ENT program
-			writeBytesToFile(data);
+			writeBytesToFile(bitString);
 			
-			double entropyEstimate = estimate(data);
+			double entropyEstimate = estimate(bitsArray);
 			
-			estimateMostCommon(data);
+			estimateMostCommon(bitsArray);
 			
-			estimateCollision(pairToBits(data));
+			estimateCollision(bitArrayToString(bitsArray));
 			
 			//String entropy = mix(processedData);
 			
 			//boolean testResult = test(entropy, confidence);
 			
-			System.out.println(frequencyNIST(pairToBits(data), confidence));
-			System.out.println(runsNIST(pairToBits(data), confidence));
-			System.out.println(fourierNIST(pairToBits(data), confidence));
-			System.out.println(cusumNIST(pairToBits(data), 0, confidence));
-			System.out.println(blockFreqNIST(pairToBits(data), 20, confidence));
-			System.out.println(blockRunsNIST(pairToBits(data), confidence));
-			System.out.println(universalNIST(pairToBits(data), pairToBits(data).length()/20, 20, confidence));
+			System.out.println(frequencyNIST(bitString, confidence));
+			System.out.println(runsNIST(bitString, confidence));
+			System.out.println(fourierNIST(bitString, confidence));
+			System.out.println(cusumNIST(bitString, 0, confidence));
+			System.out.println(blockFreqNIST(bitString, 20, confidence));
+			System.out.println(blockRunsNIST(bitString, confidence));
+			System.out.println(universalNIST(bitString, bitString.length()/20, 20, confidence));
 			
 			bitArrayToString(pairToBitsArray(data));
 		}
-		else { // For when you give a input file, confidence value, and output file
-			String inputFilename = args[0];
-			String outputFilename = args[2];
-			
-			ArrayList<Pair> data = readData(inputFilename);
-			
-			try {
-				FileWriter writer = new FileWriter(outputFilename);
-				writer.write(pairToBits(data));
-				writer.close();
-			} catch (IOException e) {
-				System.out.println("Something went screwy writing to file.");
-				e.printStackTrace();
-			}
-			
-		}
-		
-		// Print test result or something
 	}
 	
 	/*
@@ -89,8 +74,7 @@ public class EntropyProcessor {
 	 * Converts data to bytes for ENT program testing
 	 * Implemented by Joseph
 	 */
-	public static void writeBytesToFile(ArrayList<Pair> data) {
-		String output = pairToBits(data);
+	public static void writeBytesToFile(String output) {
 		BitSet bitSet = new BitSet(output.length());
 		int counter = 0;
 		for (char c : output.toCharArray()) {
@@ -162,9 +146,10 @@ public class EntropyProcessor {
 	 * Takes an ArrayList of pairs of integers representing (X, Y) mouse coordinates and returns a double representing the estimated amount of entropy from the data
 	 * Implemented by Joseph
 	 */
-	public static double estimate(ArrayList<Pair> data) {
-		// Count frequency of x, y pairs
-		HashMap<Pair, Integer> frequency = new HashMap<Pair, Integer>();
+	public static double estimate(ArrayList<Integer> data) {
+		// Count frequency of integers from data
+		HashMap<Integer, Integer> frequency = new HashMap<Integer, Integer>();
+		
 		for (int i = 0; i < data.size(); i++) {
 			if (frequency.containsKey(data.get(i))) {
 				frequency.put(data.get(i), frequency.get(data.get(i)) + 1);
@@ -203,14 +188,14 @@ public class EntropyProcessor {
 	 * Adapted code from https://github.com/usnistgov/SP800-90B_EntropyAssessment/blob/master/cpp/shared/most_common.h
 	 * Implemented by Joseph
 	 */
-	public static double estimateMostCommon(ArrayList<Pair> data) {
-		HashMap<Pair, Integer> frequency = new HashMap<Pair, Integer>();
-		for (int i = 0; i < data.size(); i++) {
-			if (frequency.containsKey(data.get(i))) {
-				frequency.put(data.get(i), frequency.get(data.get(i)) + 1);
+	public static double estimateMostCommon(ArrayList<Integer> bitsArray) {
+		HashMap<Integer, Integer> frequency = new HashMap<Integer, Integer>();
+		for (int i = 0; i < bitsArray.size(); i++) {
+			if (frequency.containsKey(bitsArray.get(i))) {
+				frequency.put(bitsArray.get(i), frequency.get(bitsArray.get(i)) + 1);
 			}
 			else {
-				frequency.put(data.get(i), 1);
+				frequency.put(bitsArray.get(i), 1);
 			}
 		}
 		
@@ -222,9 +207,9 @@ public class EntropyProcessor {
 			}
 		}
 		
-		double highestFrequency = (double)highestOccurences / (double)data.size();
+		double highestFrequency = (double)highestOccurences / (double)bitsArray.size();
 		
-		double upperBound = Math.min(1.0, ZALPHA*Math.sqrt(highestFrequency*(1.0 - highestFrequency) / ((double)data.size() - 1)));
+		double upperBound = Math.min(1.0, ZALPHA*Math.sqrt(highestFrequency*(1.0 - highestFrequency) / ((double)bitsArray.size() - 1)));
 		
 		double minEntropy = -log2(upperBound);
 		System.out.println("Estimated min-entropy from estimateMostCommon = " + minEntropy);
@@ -332,7 +317,7 @@ public class EntropyProcessor {
 		String bitstring = "";
 		for (int i = 0; i < bitarray.size(); i++) {
 			bitstring += String.format("%10s", Integer.toBinaryString(bitarray.get(i)).replace(" ", "0"));
-			System.out.println(bitstring);
+			//System.out.println(bitstring);
 		}
 		return bitstring;
 	}
@@ -361,58 +346,18 @@ public class EntropyProcessor {
 			xPrime = data.get(i).x;
 			yPrime = data.get(i).y;
 			
-			System.out.println(String.format("x:\t\t%16s", Integer.toBinaryString(xPrime)).replace(" ", "0"));
-			System.out.println(String.format("y:\t\t%16s", Integer.toBinaryString(yPrime)).replace(" ", "0"));
+			//System.out.println(String.format("x:\t\t%16s", Integer.toBinaryString(xPrime)).replace(" ", "0"));
+			//System.out.println(String.format("y:\t\t%16s", Integer.toBinaryString(yPrime)).replace(" ", "0"));
 			
 			xPrime &= xMask;
 			yPrime &= yMask;
 			
 			String xString = String.format("%7s", Integer.toBinaryString(xPrime)).replace(" ", "0");
 			String yString = String.format("%3s", Integer.toBinaryString(yPrime)).replace(" ", "0");
-			System.out.println(String.format("xPostMask:\t%16s", xString));
-			System.out.println(String.format("yPostMask:\t%16s", yString));
-			System.out.println(Integer.parseUnsignedInt(xString + yString, 2));
+			//System.out.println(String.format("xPostMask:\t%16s", xString));
+			//System.out.println(String.format("yPostMask:\t%16s", yString));
+			//System.out.println(Integer.parseUnsignedInt(xString + yString, 2));
 			bits.add(Integer.parseUnsignedInt(xString + yString, 2));
-		}
-		return bits;
-	}
-	
-	// Function to transform pairs of bits to a concatenated string of their binary equivalent.
-	// Implemented by Aleks & Joseph
-	public static String pairToBits(ArrayList<Pair> data) {
-		String bits = new String();
-		
-		int length = data.size();
-		int xPrime = 0;
-		int yPrime = 0;
-		
-		String xStrMask = "0000000001111111";
-		int xMask = Integer.parseUnsignedInt(xStrMask, 2);
-		
-		String yStrMask = "0000000000000111";
-		int yMask = Integer.parseUnsignedInt(yStrMask, 2);
-		
-		//System.out.println("xMask = " + xMask + "\t" + xStrMask);
-		//System.out.println("yMask = " + yMask + "\t" + yStrMask);
-		
-		for (int i = 0; i < data.size(); i++) {
-			xPrime = data.get(i).x;
-			yPrime = data.get(i).y;
-			
-			System.out.println(String.format("x:\t\t%16s", Integer.toBinaryString(xPrime)).replace(" ", "0"));
-			System.out.println(String.format("y:\t\t%16s", Integer.toBinaryString(yPrime)).replace(" ", "0"));
-			
-			xPrime &= xMask;
-			yPrime &= yMask;
-			
-			String xString = String.format("%7s", Integer.toBinaryString(xPrime)).replace(" ", "0");
-			String yString = String.format("%3s", Integer.toBinaryString(yPrime)).replace(" ", "0");
-			System.out.println(String.format("xPostMask:\t%16s", xString));
-			System.out.println(String.format("yPostMask:\t%16s", yString));
-			System.out.println("bits String = " + xString + yString);
-			
-			bits += xString;
-			bits += yString;
 		}
 		return bits;
 	}
