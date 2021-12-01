@@ -773,6 +773,8 @@ public class NISTTests {
 
         constraint = (int) Math.max(0.005 * Math.pow(length, 0.5), 500);
         if (J < constraint) {
+		System.out.println("Data does not fit constraint.");
+		
         	return false;
 
         } 
