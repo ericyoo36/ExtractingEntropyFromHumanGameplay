@@ -485,6 +485,7 @@ public class NISTTests {
 	}
 	
 	public static boolean serialNIST (String bits, int blockLength, double confidence) {
+		System.out.println("NIST Serial Test:");
 		double psim0, psim1, psim2, del1, del2;
         int length = bits.length();
 
@@ -552,6 +553,7 @@ public class NISTTests {
     }
 	
 	public static boolean approxEntropyNIST(String bits, int blockLength, double confidence) {
+		System.out.println("NIST Approximate Entropy Test:");
 		int seqLength;
         double chi_squared;
         double ApEn[] = new double[2], apen;
@@ -618,6 +620,7 @@ public class NISTTests {
 	}
 	
 	public static boolean randomExcursionsNIST(String bits, double confidence) {
+		System.out.println("NIST Random Excursions Test:");
 		int n = bits.length();
         int J;
         double constraint;
@@ -741,6 +744,7 @@ public class NISTTests {
 	}
 	
 	public static boolean randomExcursionsVariantNIST(String bits, double confidence) {
+		System.out.println("NIST Random Excursions Variant Test:");
 		int length;
         int J;
         int constraint;
