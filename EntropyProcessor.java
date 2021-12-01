@@ -50,7 +50,7 @@ public class EntropyProcessor {
 			System.out.println("bitString.length() = " + bitString.length());
             
 			System.out.println(NISTTests.frequencyNIST(bitArrayToString(pairToBitsArray(data)), confidence));
-			System.out.println(NISTTests.blockFreqNIST(bitArrayToString(pairToBitsArray(data)), 3, confidence));
+			System.out.println(NISTTests.blockFreqNIST(bitArrayToString(pairToBitsArray(data)), 10, confidence));
 			System.out.println(NISTTests.runsNIST(bitArrayToString(pairToBitsArray(data)), confidence));
 			System.out.println(NISTTests.blockRunsNIST(bitArrayToString(pairToBitsArray(data)), confidence));
 			//System.out.println(); // Binary Matrix Rank Test
@@ -59,8 +59,8 @@ public class EntropyProcessor {
 			//System.out.println(); // Overlapping Template Matching Test
 			System.out.println(NISTTests.universalNIST(bitArrayToString(pairToBitsArray(data)), bitArrayToString(pairToBitsArray(data)).length()/5, 4, confidence));
 			//System.out.println(); // Linear Complexity Test
-			System.out.println(NISTTests.serialNIST(bitArrayToString(pairToBitsArray(data)), 3, confidence));
-			System.out.println(NISTTests.approxEntropyNIST(bitArrayToString(pairToBitsArray(data)), 3, confidence));
+			System.out.println(NISTTests.serialNIST(bitArrayToString(pairToBitsArray(data)), 10, confidence));
+			System.out.println(NISTTests.approxEntropyNIST(bitArrayToString(pairToBitsArray(data)), 10, confidence));
 			System.out.println(NISTTests.cusumNIST(bitArrayToString(pairToBitsArray(data)), 0, confidence));
 			System.out.println(NISTTests.randomExcursionsNIST(bitArrayToString(pairToBitsArray(data)), confidence));
 			System.out.println(NISTTests.randomExcursionsVariantNIST(bitArrayToString(pairToBitsArray(data)), confidence));
