@@ -322,8 +322,7 @@ public class EntropyProcessor {
 	public static String bitArrayToString(ArrayList<Integer> bitarray) {
 		String bitstring = "";
 		for (int i = 0; i < bitarray.size(); i++) {
-			bitstring += String.format("%10s", Integer.toBinaryString(bitarray.get(i)).replace(" ", "0"));
-			//System.out.println(bitstring);
+			bitstring += String.format("%10s", Integer.toBinaryString(bitarray.get(i))).replace(" ", "0");
 		}
 		return bitstring;
 	}
