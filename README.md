@@ -1,5 +1,5 @@
 # CPSC530-CounterStrikeEntropy
-Project for CPSC530 to generate entropy from Counter-Strike: Global Offensive
+Project for CPSC530 to generate entropy from Counter-Strike: Global Offensive.  The mouse data we used exists in newcoordinates1.txt, newcoordinates2.txt, newcoordinates3.txt, and newcoordinatesConcat.txt, the last of which represents the three coordinates files concatenated.
 
 # Instructions to run
 Compile with regular java compilation, make sure to include the .jar files from our repo in the compilation process.
